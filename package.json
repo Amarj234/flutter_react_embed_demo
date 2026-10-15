@@ -1,0 +1,28 @@
+{
+  "name": "react-embed-demo-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "React Native screen embedded in the react_embed_demo Flutter app through flutter_react_embed.",
+  "scripts": {
+    "bundle:android": "react-native bundle --platform android --dev false --entry-file react_native/index.js --bundle-output assets/rn/index.android.bundle --assets-dest build/rn-assets/android",
+    "bundle:ios": "react-native bundle --platform ios --dev false --entry-file react_native/index.js --bundle-output assets/rn/main.jsbundle --assets-dest build/rn-assets/ios",
+    "bundle": "npm run bundle:android && npm run bundle:ios"
+  },
+  "dependencies": {
+    "react": "19.2.3",
+    "react-native": "0.87.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native-community/cli-platform-ios": "20.2.0",
+    "@react-native/babel-preset": "0.87.1",
+    "@react-native/metro-config": "0.87.1"
+  },
+  "engines": {
+    "node": ">= 22.11.0"
+  }
+}

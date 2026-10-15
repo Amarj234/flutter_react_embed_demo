@@ -1,0 +1,70 @@
+# React Native (flutter_react_embed README, "React Native engine" > iOS).
+# Resolve react_native_pods.rb with node to allow for hoisting.
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+# React Native 0.87 needs iOS 15.1 or later.
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  # React Native's pods need static frameworks when frameworks are used.
+  use_frameworks! :linkage => :static
+
+  config = use_native_modules!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to the app root, where package.json lives.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  # flutter_react_embed's React Native engine (opt-in subspec).
+  pod 'flutter_react_embed_ios/ReactNative', :path => '.symlinks/plugins/flutter_react_embed_ios/ios'
+
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  react_native_post_install(
+    installer,
+    '../node_modules/react-native',
+    :mac_catalyst_enabled => false
+  )
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end
